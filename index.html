@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>人才九宫格教学系统 · 海洋蓝鲸鱼版 | 重庆工商大学 周习文</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(circle at 10% 30%, #c3e2fc, #7fb4d0);
+            font-family: 'Segoe UI', 'Roboto', '微软雅黑', system-ui, sans-serif;
+            padding: 20px;
+            position: relative;
+        }
+
+        /* 海洋蓝主容器 */
+        .ocean-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(3px);
+            border-radius: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 20, 40, 0.3);
+            padding: 18px 24px 28px;
+            transition: all 0.2s;
+        }
+
+        /* 顶部设计师条 */
+        .designer-bar {
+            background: #0a3f66e6;
+            backdrop-filter: blur(8px);
+            border-radius: 60px;
+            padding: 6px 24px;
+            margin-bottom: 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+        }
+        .designer-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #F9E0A0, #FFFFFF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .hidden-import-btn {
+            background: #ffdd99;
+            border: none;
+            padding: 6px 18px;
+            border-radius: 40px;
+            font-weight: bold;
+            color: #014175;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 #b97f10;
+            transform: translateY(-1px);
+        }
+        .hidden-import-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #b97f10;
+        }
+
+        /* 主区域左右 */
+        .dashboard-split {
+            display: flex;
+            gap: 28px;
+            flex-wrap: wrap;
+        }
+        .left-card {
+            flex: 1.2;
+            min-width: 320px;
+            background: #e2f0ffdd;
+            border-radius: 36px;
+            padding: 18px;
+            box-shadow: 0 12px 25px rgba(0,0,0,0.1);
+            backdrop-filter: blur(2px);
+        }
+        .right-card {
+            flex: 2;
+            min-width: 540px;
+            background: #e2f0ffdd;
+            border-radius: 36px;
+            padding: 18px;
+            box-shadow: 0 12px 25px rgba(0,0,0,0.1);
+        }
+
+        /* 员工信息文本框 可拖动缩放 */
+        .info-resize-box {
+            background: #ffffffec;
+            border-radius: 32px;
+            padding: 18px;
+            resize: both;
+            overflow: auto;
+            min-height: 320px;
+            border: 2px solid #4c9fd8;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.05);
+        }
+        .emp-detail p {
+            margin: 10px 0;
+            border-bottom: 1px dashed #b9d6f0;
+            padding-bottom: 6px;
+        }
+        .badge-lvl {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-weight: bold;
+        }
+        .high { background: #2b7a3e; color: white; }
+        .mid { background: #e68a2e; color: white; }
+        .low { background: #b13b3b; color: white; }
+
+        /* 九宫格区域 */
+        .nine-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            background: #1b5f8c;
+            gap: 4px;
+            border-radius: 24px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 2px solid #ffffff80;
+        }
+        .grid-cell {
+            background: #cde6fe;
+            min-height: 110px;
+            padding: 10px 6px;
+            text-align: center;
+            transition: all 0.1s;
+        }
+        .grid-title {
+            font-weight: bold;
+            background: #0e4d74;
+            color: white;
+            padding: 5px;
+            font-size: 0.85rem;
+            border-radius: 20px;
+            margin-bottom: 6px;
+        }
+        .emp-list-in-cell {
+            font-size: 0.7rem;
+            text-align: left;
+            min-height: 55px;
+            max-height: 85px;
+            overflow-y: auto;
+        }
+        .emp-tag {
+            background: #fef9e6;
+            display: inline-block;
+            padding: 2px 8px;
+            margin: 2px;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.7rem;
+        }
+        .cell-count {
+            font-weight: bold;
+            background: #0a3857;
+            display: inline-block;
+            padding: 0px 10px;
+            border-radius: 30px;
+            color: white;
+            margin-top: 6px;
+            font-size: 0.75rem;
+        }
+
+        /* 3D按键组 */
+        .btn-group-9 {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 20px 0 12px;
+            justify-content: center;
+        }
+        .btn-3d {
+            background: #2a7fb1;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 60px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.85rem;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #0f4468;
+            transition: 0.05s linear;
+            transform: translateY(-2px);
+        }
+        .btn-3d:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #0f4468;
+        }
+        .analysis-panel {
+            background: #cde1f2;
+            border-radius: 32px;
+            padding: 15px;
+            margin-top: 18px;
+        }
+        .next-hint {
+            background: #fef1cf;
+            border-radius: 30px;
+            padding: 8px;
+            text-align: center;
+            margin-top: 12px;
+            font-size: 0.85rem;
+        }
+
+        /* 云朵鲸鱼错误弹窗 */
+        .cloud-modal {
+            position: fixed;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border-radius: 56px;
+            padding: 18px 32px 22px 28px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-width: 260px;
+            border: 1px solid #bee0ff;
+            animation: floatCloud 0.2s ease;
+        }
+        .cloud-modal .close-cloud {
+            position: absolute;
+            top: 12px;
+            right: 18px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: #4f7ea3;
+            font-weight: bold;
+        }
+        .whale-icon {
+            font-size: 3rem;
+            filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.1));
+        }
+        .cloud-text {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #0b5e7c;
+            margin-top: 8px;
+            font-family: 'Segoe UI', cursive;
+        }
+        @keyframes floatCloud {
+            0% { opacity: 0; transform: translate(-50%, -40%) scale(0.9);}
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1);}
+        }
+
+        /* 浮动预览框 可拖动缩放隐藏 */
+        .floating-preview {
+            position: fixed;
+            top: 120px;
+            right: 35px;
+            width: 400px;
+            max-width: 85vw;
+            background: #eff7ffef;
+            border-radius: 32px;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.3);
+            z-index: 1100;
+            border: 1px solid #ffffffcc;
+            backdrop-filter: blur(8px);
+            resize: both;
+            overflow: auto;
+            min-width: 280px;
+            min-height: 340px;
+        }
+        .preview-header {
+            background: #0e5b89;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 32px 32px 0 0;
+            cursor: move;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+        }
+        .preview-body {
+            padding: 16px;
+            max-height: 460px;
+            overflow-y: auto;
+        }
+        .emp-radio-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 12px 0;
+            max-height: 260px;
+            overflow-y: auto;
+        }
+        .emp-radio-card {
+            background: white;
+            padding: 8px 12px;
+            border-radius: 28px;
+            cursor: pointer;
+            transition: all 0.1s;
+            border-left: 5px solid #2c7ab1;
+        }
+        .emp-radio-card.selected {
+            background: #2c7ab1;
+            color: white;
+            font-weight: bold;
+            border-left-color: #ffcd7e;
+        }
+        .hide-preview-btn, .show-preview-fab {
+            background: #115e88;
+            border: none;
+            padding: 8px;
+            border-radius: 40px;
+            color: white;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 12px;
+            cursor: pointer;
+        }
+        .show-preview-fab {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: auto;
+            padding: 12px 20px;
+            background: #0f5982;
+            z-index: 1101;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        button:disabled { opacity: 0.6; transform: none; }
+        .flex-between { display: flex; justify-content: space-between; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<div class="ocean-container">
+    <div class="designer-bar">
+        <span class="designer-name">🐋 程序设计人：重庆工商大学 24级人力资源管理专业 周习文</span>
+        <div>
+            <button class="hidden-import-btn" id="triggerExcelBtn">📁 隐藏式导入表格</button>
+            <input type="file" id="excelUpload" accept=".xlsx, .xls" style="display:none" />
+        </div>
+    </div>
+
+    <div class="dashboard-split">
+        <!-- 左侧 员工信息 -->
+        <div class="left-card">
+            <h3 style="color:#0c4d74;">🐟 当前员工信息卡片</h3>
+            <div class="info-resize-box" id="infoResizeBox">
+                <div id="employeeFullInfo">📌 请先导入Excel员工表，并在右侧预览框选择员工</div>
+            </div>
+            <div class="btn-group-9" id="nineTypeButtons"></div>
+            <div id="messageArea" style="min-height: 40px;"></div>
+        </div>
+
+        <!-- 右侧九宫格区域 -->
+        <div class="right-card">
+            <h3 style="color:#0c4d74;">🧩 人才九宫格盘点图 (业绩 / 潜力)</h3>
+            <div class="nine-grid" id="nineGridContainer"></div>
+            <div class="analysis-panel" id="analysisPanel">
+                <strong>📋 动态分析报告</strong><br>等待员工判断...
+            </div>
+            <div class="next-hint" id="autoHint">
+                💡 判断正确后自动跳转下一个未盘点员工，也可在预览框自行选择测评对象
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 浮动预览框（可拖拽/缩放/隐藏，含员工所有信息和勾选）-->
+<div id="floatingPreview" class="floating-preview" style="display: block;">
+    <div class="preview-header" id="previewDragHandle">
+        📋 员工原始数据预览 & 勾选
+        <span style="cursor:pointer; font-size:1.2rem;" id="closeFloatingBtn">✖️</span>
+    </div>
+    <div class="preview-body">
+        <div style="font-weight:bold; margin-bottom:8px;">✅ 单击选择一名员工进行测评（显示完整档案）</div>
+        <div id="employeeListPreview" class="emp-radio-list">暂无数据，请导入Excel</div>
+        <button id="hideFloatingBtn" class="hide-preview-btn">🔽 隐藏预览框</button>
+    </div>
+</div>
+<button id="showFloatingBtn" class="show-preview-fab" style="display: none;">👥 显示员工预览框</button>
+
+<script>
+    // ---------- 全局变量 ----------
+    let employeesMaster = [];        // 所有员工对象
+    let currentEmployee = null;      // 当前选中的员工
+    let nineGridStorage = {           // 九宫格数据: key格式 "业绩等级-潜力等级"
+        '高-高': [], '高-中': [], '高-低': [],
+        '中-高': [], '中-中': [], '中-低': [],
+        '低-高': [], '低-中': [], '低-低': []
+    };
+
+    // 辅助函数：根据2025绩效原始分(S/A/B/C)映射等级和分值
+    function getPerfLevelFromGrade(grade) {
+        const mapScore = {'S':9,'A':6,'B':3,'C':1};
+        let score = mapScore[grade] || 3;
+        if (score >= 7) return { level: '高', rawScore: score };
+        if (score >= 4) return { level: '中', rawScore: score };
+        return { level: '低', rawScore: score };
+    }
+    function getPotentialLevelFromScore(score) {
+        if (score >= 8) return '高';
+        if (score >= 6) return '中';
+        return '低';
+    }
+
+    // 解析员工 (完整字段展示)
+    function buildEmployee(row) {
+        // 列索引基于提供的样例: 编号0,姓名1,部门2,职务3,年龄4,学历5,司龄6,任现职年限7,上一级职务8,2023绩效9,2024绩效10,2025绩效11,KPI达成率12,绩效趋势13,业务能力14,领导力15,战略思维16,创新能力17,抗压能力18,潜力总分19,优势20,劣势21,发展意愿22
+        const getVal = (idx) => (row[idx] !== undefined && row[idx] !== null) ? row[idx] : '';
+        const perf2025Raw = getVal(11);
+        const perfInfo = getPerfLevelFromGrade(perf2025Raw);
+        let potentialTotal = parseFloat(getVal(19));
+        if (isNaN(potentialTotal)) {
+            let sum = 0;
+            for (let i = 14; i <= 18; i++) sum += parseFloat(getVal(i)) || 0;
+            potentialTotal = sum / 5;
+        }
+        const potLevel = getPotentialLevelFromScore(potentialTotal);
+        return {
+            id: getVal(0),
+            name: getVal(1),
+            dept: getVal(2),
+            position: getVal(3),
+            age: getVal(4),
+            education: getVal(5),
+            seniority: getVal(6),
+            currentTenure: getVal(7),
+            superior: getVal(8),
+            perf2023: getVal(9),
+            perf2024: getVal(10),
+            perf2025: perf2025Raw,
+            kpiRate: getVal(12),
+            perfTrend: getVal(13),
+            bizAbility: parseFloat(getVal(14)) || 0,
+            leadership: parseFloat(getVal(15)) || 0,
+            strategy: parseFloat(getVal(16)) || 0,
+            innovation: parseFloat(getVal(17)) || 0,
+            stressResist: parseFloat(getVal(18)) || 0,
+            potentialScore: potentialTotal,
+            advantage: getVal(20),
+            disadvantage: getVal(21),
+            developmentWill: getVal(22),
+            perfLevel: perfInfo.level,
+            potentialLevel: potLevel,
+            perfRawScore: perfInfo.rawScore
+        };
+    }
+
+    // 加载Excel并构建员工数组
+    function loadExcelToData(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+            if (!rows || rows.length < 4) return;
+            let headerRowIdx = -1;
+            for (let i = 0; i < rows.length; i++) {
+                if (rows[i][0] && rows[i][0].toString().includes('编号')) {
+                    headerRowIdx = i;
+                    break;
+                }
+            }
+            if (headerRowIdx === -1) headerRowIdx = 0;
+            const dataRows = rows.slice(headerRowIdx + 1).filter(r => r[0] && !isNaN(parseInt(r[0])));
+            employeesMaster = [];
+            for (let row of dataRows) {
+                if (row.length < 2) continue;
+                let emp = buildEmployee(row);
+                employeesMaster.push(emp);
+            }
+            if (employeesMaster.length) {
+                resetNineGridAndStorage();
+                renderEmployeePreviewList();   // 刷新预览框（含员工所有信息展示）
+                // 默认选择第一个员工
+                if (employeesMaster.length) selectEmployee(employeesMaster[0]);
+            } else {
+                document.getElementById('employeeFullInfo').innerHTML = '⚠️ 表格无有效数据，请检查列格式';
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    // 重置九宫格存储及UI
+    function resetNineGridAndStorage() {
+        nineGridStorage = {
+            '高-高': [], '高-中': [], '高-低': [],
+            '中-高': [], '中-中': [], '中-低': [],
+            '低-高': [], '低-中': [], '低-低': []
+        };
+        renderNineGridUI();
+        updateAnalysisPanel(null);
+    }
+
+    // 渲染九宫格界面
+    function renderNineGridUI() {
+        const container = document.getElementById('nineGridContainer');
+        const perfOrder = ['高', '中', '低'];
+        const potOrder = ['低', '中', '高'];  // 横坐标潜力从左至右低中高
+        container.innerHTML = '';
+        for (let perf of perfOrder) {
+            for (let pot of potOrder) {
+                const key = `${perf}-${pot}`;
+                const employees = nineGridStorage[key] || [];
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                cell.innerHTML = `
+                    <div class="grid-title">业绩 ${perf}<br>潜力 ${pot}</div>
+                    <div class="emp-list-in-cell" id="gridList-${perf}-${pot}">
+                        ${employees.map(emp => `<span class="emp-tag">${emp.name}</span>`).join('')}
+                    </div>
+                    <div class="cell-count">${employees.length}人</div>
+                `;
+                container.appendChild(cell);
+            }
+        }
+    }
+
+    // 更新特定格子增量（无需全重绘）
+    function refreshFullGrid() { renderNineGridUI(); }
+
+    // 添加员工至九宫格（移出旧位置）
+    function addEmployeeToGrid(employee) {
+        const targetKey = `${employee.perfLevel}-${employee.potentialLevel}`;
+        for (let key in nineGridStorage) {
+            nineGridStorage[key] = nineGridStorage[key].filter(e => e.id !== employee.id);
+        }
+        nineGridStorage[targetKey].push(employee);
+        refreshFullGrid();
+    }
+
+    // 判断员工是否已盘点过
+    function isEmployeeAlreadyPlaced(empId) {
+        for (let key in nineGridStorage) {
+            if (nineGridStorage[key].some(e => e.id === empId)) return true;
+        }
+        return false;
+    }
+
+    // 显示云朵鲸鱼错误弹窗 (半透明云朵+小鲸鱼)
+    function showWhaleErrorTip() {
+        // 移除已有弹窗
+        const existingModal = document.querySelector('.cloud-modal');
+        if (existingModal) existingModal.remove();
+        const modal = document.createElement('div');
+        modal.className = 'cloud-modal';
+        modal.innerHTML = `
+            <div class="close-cloud" id="closeCloudBtn">✖</div>
+            <div class="whale-icon">🐋✨</div>
+            <div class="cloud-text">笨宝，再想想哦</div>
+        `;
+        document.body.appendChild(modal);
+        const closeFunc = () => { if(modal) modal.remove(); };
+        document.getElementById('closeCloudBtn').onclick = closeFunc;
+        setTimeout(() => { if(modal) modal.remove(); }, 6000);
+    }
+
+    // 显示普通反馈（非错误不弹鲸鱼）
+    function showMessage(msg, isError = false) {
+        const msgDiv = document.getElementById('messageArea');
+        msgDiv.innerHTML = `<div style="background:${isError?'#ffe1e1':'#d4f0d0'}; border-radius:30px; padding:6px 12px;">${msg}</div>`;
+        if (!isError) setTimeout(() => { if(msgDiv.innerHTML.includes(msg)) msgDiv.innerHTML = ''; }, 1800);
+    }
+
+    // 构建9个等级按钮
+    function buildNineButtons() {
+        const container = document.getElementById('nineTypeButtons');
+        const categories = [
+            '高潜明星(高-高)','核心骨干(高-中)','待提升者(高-低)',
+            '潜力之星(中-高)','稳定贡献(中-中)','合格员工(中-低)',
+            '风险关注(低-高)','边缘贡献(低-中)','问题员工(低-低)'
+        ];
+        const keys = ['高-高','高-中','高-低','中-高','中-中','中-低','低-高','低-中','低-低'];
+        container.innerHTML = '';
+        keys.forEach((key, idx) => {
+            const btn = document.createElement('button');
+            btn.textContent = categories[idx];
+            btn.classList.add('btn-3d');
+            btn.onclick = () => {
+                if (!currentEmployee) {
+                    showMessage('请先在预览框选择一名员工', true);
+                    return;
+                }
+                const correctKey = `${currentEmployee.perfLevel}-${currentEmployee.potentialLevel}`;
+                if (key === correctKey) {
+                    // 判断正确
+                    if (isEmployeeAlreadyPlaced(currentEmployee.id)) {
+                        showMessage(`${currentEmployee.name} 已经盘点过了，请选择下一位员工`, true);
+                        return;
+                    }
+                    addEmployeeToGrid(currentEmployee);
+                    showMessage(`✅ 正确！${currentEmployee.name} 已放入【${categories[idx]}】区域`, false);
+                    updateAnalysisPanel(currentEmployee);
+                    // 自动跳转到下一个未盘点的员工
+                    autoNextUnassigned();
+                } else {
+                    // 错误：弹出鲸鱼云朵对话框
+                    showWhaleErrorTip();
+                    showMessage(`❌ 判断错误，${currentEmployee.name} 实际应为 ${currentEmployee.perfLevel}业绩 / ${currentEmployee.potentialLevel}潜力，再试试看`, true);
+                }
+            };
+            container.appendChild(btn);
+        });
+    }
+
+    // 自动跳转下一个未盘点员工
+    function autoNextUnassigned() {
+        const assignedIds = new Set();
+        for (let arr of Object.values(nineGridStorage)) {
+            arr.forEach(e => assignedIds.add(e.id));
+        }
+        const remaining = employeesMaster.filter(emp => !assignedIds.has(emp.id));
+        if (remaining.length > 0) {
+            selectEmployee(remaining[0]);
+            showMessage(`✨ 已自动跳转至下一位员工：${remaining[0].name}`, false);
+        } else {
+            if (employeesMaster.length && assignedIds.size === employeesMaster.length) {
+                showMessage('🎉 太棒了！所有员工已完成人才九宫格盘点！', false);
+                updateAnalysisPanel(currentEmployee);
+            } else if (employeesMaster.length === 0) {
+                // nothing
+            } else {
+                showMessage('🏆 当前所有未盘点员工均已展示完毕，可继续检查九宫格', false);
+            }
+        }
+    }
+
+    // 更新分析面板（含风险提示）
+    function updateAnalysisPanel(emp) {
+        const panel = document.getElementById('analysisPanel');
+        if (!emp && currentEmployee) emp = currentEmployee;
+        if (!emp) {
+            panel.innerHTML = '<strong>📊 人才动态分析</strong><br>请导入数据并选择员工开始测评';
+            return;
+        }
+        let riskMsg = '';
+        if (emp.perfLevel === '低' && emp.potentialLevel === '低') riskMsg = '⚠️ 高风险：双低员工，建议绩效改进或岗位调整';
+        else if (emp.perfLevel === '低' && emp.potentialLevel === '高') riskMsg = '⚠️ 风险型：高潜力低绩效，需诊断激励/辅导差距';
+        else if (emp.perfLevel === '高' && emp.potentialLevel === '低') riskMsg = '⚠️ 稳定贡献但潜力有限，聚焦现岗深耕';
+        else if (emp.perfLevel === '高' && emp.potentialLevel === '高') riskMsg = '🌟 明星人才，重点培养与保留';
+        else riskMsg = '✅ 正常区间，结合发展意愿规划职业路径';
+        const totalPlaced = Object.values(nineGridStorage).flat().length;
+        panel.innerHTML = `<strong>🐬 ${emp.name} · 人才诊断</strong><br>
+        业绩等级: ${emp.perfLevel} (2025绩效:${emp.perf2025}) &nbsp;| 潜力总分: ${emp.potentialScore.toFixed(1)} (${emp.potentialLevel})<br>
+        优势: ${emp.advantage || '—'} &nbsp;劣势: ${emp.disadvantage || '—'}<br>
+        ${riskMsg}<br>
+        <small>📌 九宫格已盘点总人数: ${totalPlaced} / ${employeesMaster.length}</small>`;
+    }
+
+    // 在左侧文本框显示员工所有信息(可视化展示绩效等级/潜力分数)
+    function displayFullEmployeeInfo(emp) {
+        const container = document.getElementById('employeeFullInfo');
+        if (!emp) return;
+        container.innerHTML = `
+            <div class="emp-detail">
+                <p><strong>🆔 编号：</strong> ${emp.id} &nbsp;| <strong>姓名：</strong> ${emp.name}</p>
+                <p><strong>🏛️ 部门：</strong> ${emp.dept} &nbsp;| 职务：${emp.position}</p>
+                <p><strong>📅 司龄/现职年限：</strong> ${emp.seniority}年 / ${emp.currentTenure}年 &nbsp; 发展意愿:${emp.developmentWill}</p>
+                <p><strong>🎯 2025绩效：</strong> ${emp.perf2025} → 等级 <span class="badge-lvl ${emp.perfLevel==='高'?'high':emp.perfLevel==='中'?'mid':'low'}">${emp.perfLevel}</span></p>
+                <p><strong>📈 潜力总分：</strong> ${emp.potentialScore.toFixed(2)} 分 → 等级 <span class="badge-lvl ${emp.potentialLevel==='高'?'high':emp.potentialLevel==='中'?'mid':'low'}">${emp.potentialLevel}</span></p>
+                <p><strong>⭐ 优势关键词：</strong> ${emp.advantage || '无'} &nbsp; <strong>⚠️ 劣势：</strong> ${emp.disadvantage || '无'}</p>
+                <p><strong>📊 业务/领导/战略/创新/抗压：</strong> ${emp.bizAbility} / ${emp.leadership} / ${emp.strategy} / ${emp.innovation} / ${emp.stressResist}</p>
+                <p><strong>📋 学历：</strong> ${emp.education} &nbsp; 年龄：${emp.age}</p>
+            </div>
+        `;
+    }
+
+    // 选择员工：更新全局，刷新左侧信息、高亮预览框
+    function selectEmployee(emp) {
+        currentEmployee = emp;
+        displayFullEmployeeInfo(emp);
+        updateAnalysisPanel(emp);
+        highlightEmployeeInPreview(emp.id);
+        // 清除任何残留消息
+        const msgDiv = document.getElementById('messageArea');
+        msgDiv.innerHTML = '';
+    }
+
+    // 预览框渲染（含所有员工完整信息展示预览框内可看到所有字段细节）
+    function renderEmployeePreviewList() {
+        const listDiv = document.getElementById('employeeListPreview');
+        if (!employeesMaster.length) {
+            listDiv.innerHTML = '<div>📭 暂无员工，请左上角导入Excel</div>';
+            return;
+        }
+        listDiv.innerHTML = '';
+        employeesMaster.forEach(emp => {
+            const card = document.createElement('div');
+            card.className = 'emp-radio-card';
+            card.setAttribute('data-emp-id', emp.id);
+            card.innerHTML = `<strong>${emp.name}</strong> · ${emp.dept} · 绩效${emp.perf2025}(${emp.perfLevel}) 潜力${emp.potentialScore.toFixed(0)}分(${emp.potentialLevel})<br>
+            <span style="font-size:0.7rem;">优势:${emp.advantage?.slice(0,20)||'—'} | 发展意愿:${emp.developmentWill}</span>`;
+            card.onclick = (e) => {
+                e.stopPropagation();
+                selectEmployee(emp);
+                // 也可以自动不隐藏预览框，保留学生自行点击隐藏
+            };
+            listDiv.appendChild(card);
+        });
+        if (currentEmployee) highlightEmployeeInPreview(currentEmployee.id);
+    }
+
+    function highlightEmployeeInPreview(empId) {
+        document.querySelectorAll('.emp-radio-card').forEach(card => {
+            if (card.getAttribute('data-emp-id') == empId) card.classList.add('selected');
+            else card.classList.remove('selected');
+        });
+    }
+
+    // ----- 预览框拖拽/缩放/隐藏逻辑 -----
+    function initFloatingDrag() {
+        const floating = document.getElementById('floatingPreview');
+        let offsetX, offsetY, isDrag = false;
+        const header = document.getElementById('previewDragHandle');
+        header.addEventListener('mousedown', (e) => {
+            if (e.target === header || header.contains(e.target)) {
+                isDrag = true;
+                offsetX = e.clientX - floating.offsetLeft;
+                offsetY = e.clientY - floating.offsetTop;
+                floating.style.position = 'fixed';
+                floating.style.margin = '0';
+                document.body.style.userSelect = 'none';
+            }
+        });
+        window.addEventListener('mousemove', (e) => {
+            if (isDrag) {
+                let left = e.clientX - offsetX;
+                let top = e.clientY - offsetY;
+                left = Math.min(window.innerWidth - 60, Math.max(10, left));
+                top = Math.min(window.innerHeight - 100, Math.max(10, top));
+                floating.style.left = left + 'px';
+                floating.style.top = top + 'px';
+                floating.style.right = 'auto';
+            }
+        });
+        window.addEventListener('mouseup', () => { isDrag = false; document.body.style.userSelect = ''; });
+        document.getElementById('closeFloatingBtn').onclick = () => { floating.style.display = 'none'; document.getElementById('showFloatingBtn').style.display = 'block'; };
+        document.getElementById('hideFloatingBtn').onclick = () => { floating.style.display = 'none'; document.getElementById('showFloatingBtn').style.display = 'block'; };
+        document.getElementById('showFloatingBtn').onclick = () => { floating.style.display = 'block'; document.getElementById('showFloatingBtn').style.display = 'none'; };
+    }
+
+    // 初始化页面
+    function init() {
+        buildNineButtons();
+        resetNineGridAndStorage();
+        initFloatingDrag();
+        document.getElementById('triggerExcelBtn').addEventListener('click', () => document.getElementById('excelUpload').click());
+        document.getElementById('excelUpload').addEventListener('change', (e) => {
+            if (e.target.files.length) loadExcelToData(e.target.files[0]);
+        });
+        // 默认提示
+        document.getElementById('employeeFullInfo').innerHTML = '🐳 欢迎使用人才九宫格教学系统，请导入Excel员工表开始实践';
+    }
+    init();
+</script>
+</body>
+</html>
